@@ -13,11 +13,20 @@ from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 import secrets
 import json
+import requests
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max (para modelos grandes)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+# Cargar variables de entorno
+load_dotenv()
+
+# API Key de Plant.ID
+PLANT_ID_API_KEY = os.getenv('PLANT_ID_API_KEY')
+PLANT_ID_API_URL = 'https://api.plant.id/v2/identify'
 
 # Asegurar que exista la carpeta de uploads
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -49,6 +58,126 @@ def analisis():
                          nombres_clases=session.get('nombres_clases', nombres_clases),
                          colores_clases=colores_clases)
 
+
+@app.route('/identificacion')
+def identificacion():
+    return render_template('identificacion.html')
+
+@app.route('/identificar_planta', methods=['POST'])
+def identificar_planta():
+    if not PLANT_ID_API_KEY:
+        return jsonify({
+            'success': False, 
+            'error': 'API Key no configurada. Verifica tu archivo .env'
+        })
+    
+    if 'imagen' not in request.files:
+        return jsonify({'success': False, 'error': 'No se envió ninguna imagen'})
+    
+    archivo = request.files['imagen']
+    
+    try:
+        # Leer y convertir imagen a base64
+        imagen_pil = Image.open(archivo.stream).convert('RGB')
+        
+        # Redimensionar si es muy grande (Plant.ID recomienda máximo 1500px)
+        max_size = 1500
+        if max(imagen_pil.size) > max_size:
+            ratio = max_size / max(imagen_pil.size)
+            new_size = tuple([int(x * ratio) for x in imagen_pil.size])
+            imagen_pil = imagen_pil.resize(new_size, Image.Resampling.LANCZOS)
+        
+        # Convertir a base64
+        buffered = io.BytesIO()
+        imagen_pil.save(buffered, format="JPEG")
+        img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        
+        # Preparar request para Plant.ID API
+        headers = {
+            'Content-Type': 'application/json',
+            'Api-Key': PLANT_ID_API_KEY
+        }
+        
+        data = {
+            'images': [f'data:image/jpeg;base64,{img_base64}'],
+            'modifiers': ['crops_fast', 'similar_images'],
+            'plant_language': 'es',
+            'plant_details': [
+                'common_names',
+                'url',
+                'description',
+                'taxonomy',
+                'synonyms'
+            ]
+        }
+        
+        print("Enviando solicitud a Plant.ID API...")
+        response = requests.post(PLANT_ID_API_URL, json=data, headers=headers)
+        
+        if response.status_code != 200 and response.status_code != 201:
+            print(f"Error de API: {response.status_code}")
+            print(f"Respuesta: {response.text}")
+            return jsonify({
+                'success': False,
+                'error': f'Error de API Plant.ID: {response.status_code}'
+            })
+        
+        result = response.json()
+        print("Respuesta recibida de Plant.ID")
+        
+        # Verificar si hay sugerencias
+        if not result.get('suggestions') or len(result['suggestions']) == 0:
+            return jsonify({
+                'success': False,
+                'error': 'No se pudo identificar la planta. Intenta con otra imagen.'
+            })
+        
+        # Obtener la mejor sugerencia
+        best_match = result['suggestions'][0]
+        plant_details = best_match.get('plant_details', {})
+        
+        # Preparar respuesta
+        response_data = {
+            'success': True,
+            'scientific_name': best_match.get('plant_name', 'Desconocido'),
+            'probability': round(best_match.get('probability', 0) * 100, 2),
+            'common_names': plant_details.get('common_names', []),
+            'description': plant_details.get('description', {}).get('value', 'No disponible'),
+            'url': plant_details.get('url', ''),
+            'taxonomy': plant_details.get('taxonomy', {}),
+            'synonyms': plant_details.get('synonyms', []),
+            'similar_images': []
+        }
+        
+        # Agregar imágenes similares si existen
+        if best_match.get('similar_images'):
+            similar_imgs = best_match['similar_images'][:6]  # Máximo 6 imágenes
+            response_data['similar_images'] = [
+                {
+                    'url': img.get('url', ''),
+                    'url_small': img.get('url_small', ''),
+                    'similarity': round(img.get('similarity', 0), 3)
+                }
+                for img in similar_imgs
+            ]
+        
+        return jsonify(response_data)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Error de conexión con Plant.ID: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Error de conexión con el servicio de identificación'
+        })
+    except Exception as e:
+        print(f"Error al identificar planta: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': f'Error al procesar la imagen: {str(e)}'
+        })
+        
 @app.errorhandler(413)
 @app.errorhandler(RequestEntityTooLarge)
 def handle_file_too_large(e):

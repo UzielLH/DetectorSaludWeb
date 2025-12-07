@@ -24,8 +24,15 @@ function formatearPorcentaje(valor) {
 // Smooth scroll para enlaces internos
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        
+        // Solo procesar si realmente es un enlace interno con #
+        if (!href || !href.startsWith('#')) {
+            return;
+        }
+        
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(href);
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth'

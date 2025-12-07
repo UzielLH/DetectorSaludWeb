@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Identificación de Plantas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/identificacion.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="identificacion-container">
+    <div class="header-section">
+        <h1>🌿 Identificación de Plantas</h1>
+        <p class="subtitle">Sube una foto de una planta y descubre su especie usando inteligencia artificial</p>
+    </div>
+
+    <div class="upload-section">
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-content">
+                <div class="upload-icon">📸</div>
+                <h3>Arrastra una imagen aquí</h3>
+                <p>o haz clic para seleccionar</p>
+                <input type="file" id="imagenInput" accept="image/*" hidden>
+                <button class="btn btn-primary" id="selectBtn">Seleccionar Imagen</button>
+            </div>
+        </div>
+
+        <div class="preview-section" id="previewSection" style="display: none;">
+            <img id="imagePreview" alt="Vista previa">
+            <button class="btn btn-secondary" id="changeImageBtn">Cambiar Imagen</button>
+            <button class="btn btn-primary" id="identifyBtn">Identificar Planta</button>
+        </div>
+    </div>
+
+    <div class="loading-section" id="loadingSection" style="display: none;">
+        <div class="spinner"></div>
+        <p>Analizando imagen con IA...</p>
+    </div>
+
+    <div class="results-section" id="resultsSection" style="display: none;">
+        <div class="result-header">
+            <h2>Resultados de Identificación</h2>
+            <button class="btn btn-secondary" id="newSearchBtn">Nueva Búsqueda</button>
+        </div>
+
+        <div class="result-grid">
+            <div class="result-card main-info">
+                <h3>Información Principal</h3>
+                <div class="info-item">
+                    <strong>Nombre Científico:</strong>
+                    <p id="scientificName" class="scientific-name">-</p>
+                </div>
+                <div class="info-item">
+                    <strong>Nombres Comunes:</strong>
+                    <div id="commonNames" class="common-names">-</div>
+                </div>
+                <div class="info-item">
+                    <strong>Confianza:</strong>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill"></div>
+                        <span id="confidenceText">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card description">
+                <h3>Descripción</h3>
+                <p id="description">-</p>
+                <a id="wikiLink" href="#" target="_blank" class="wiki-link" style="display: none;">
+                    Ver más en Wikipedia →
+                </a>
+            </div>
+
+            <div class="result-card taxonomy">
+                <h3>Taxonomía</h3>
+                <div id="taxonomyList" class="taxonomy-list">-</div>
+            </div>
+
+            <div class="result-card similar-images">
+                <h3>Imágenes Similares</h3>
+                <div id="similarImages" class="similar-grid">-</div>
+            </div>
+
+            <div class="result-card synonyms">
+                <h3>Sinónimos</h3>
+                <div id="synonymsList" class="synonyms-list">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="error-section" id="errorSection" style="display: none;">
+        <div class="error-card">
+            <div class="error-icon">⚠️</div>
+            <h3>Error</h3>
+            <p id="errorMessage">Ha ocurrido un error</p>
+            <button class="btn btn-primary" id="retryBtn">Intentar de Nuevo</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/identificacion.js') }}"></script>
+{% endblock %}
