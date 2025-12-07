@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Analizador de Plantas{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Analizador de Salud de Plantas</h1>
+        <p class="hero-subtitle">Sistema inteligente de clasificación de plantas usando Deep Learning</p>
+        
+        <div class="hero-features">
+            <div class="feature-card">
+                <div class="feature-icon">🔬</div>
+                <h3>Análisis Preciso</h3>
+                <p>Clasificación usando redes neuronales convolucionales</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Visualización Detallada</h3>
+                <p>Gráficos y métricas de color, forma y textura</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Detección OOD</h3>
+                <p>Identifica imágenes fuera de distribución</p>
+            </div>
+        </div>
+        
+        <div class="hero-actions">
+            <a href="/configuracion" class="btn btn-primary btn-lg">Comenzar</a>
+            <a href="#como-funciona" class="btn btn-secondary btn-lg">Cómo Funciona</a>
+        </div>
+    </div>
+</div>
+
+<section id="como-funciona" class="info-section">
+    <div class="container">
+        <h2>¿Cómo Funciona?</h2>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Carga tu Modelo</h3>
+                <p>Sube tu modelo entrenado (.h5 o .keras) y configura el tipo de planta</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Selecciona una Imagen</h3>
+                <p>Carga una imagen de la planta que deseas analizar</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Obtén Resultados</h3>
+                <p>Visualiza la clasificación, métricas y recomendaciones detalladas</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <h2>¿Listo para comenzar?</h2>
+        <p>Carga tu modelo y comienza a analizar tus plantas</p>
+        <a href="/configuracion" class="btn btn-primary btn-lg">Configurar Ahora</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Análisis - Analizador de Plantas{% endblock %}
+
+{% block content %}
+<div class="container analisis-container">
+    <div class="analisis-header">
+        <h1>Análisis de {{ tipo_planta }}</h1>
+        <p>Carga una imagen para analizar su estado de salud</p>
+    </div>
+    
+    <div class="upload-section">
+        <div class="upload-card">
+            <input type="file" id="inputImagen" accept="image/*" style="display: none;">
+            <label for="inputImagen" class="upload-area">
+                <div class="upload-icon">📸</div>
+                <h3>Cargar Imagen</h3>
+                <p>Click para seleccionar o arrastra una imagen aquí</p>
+                <p class="upload-hint">Formatos: JPG, PNG, BMP (máx. 16MB)</p>
+            </label>
+        </div>
+    </div>
+    
+    <div id="resultadosAnalisis" style="display: none;">
+        <!-- Tabs de navegación -->
+        <div class="tabs">
+            <button class="tab-button active" data-tab="basico">Análisis Básico</button>
+            <button class="tab-button" data-tab="detallado">Análisis Detallado</button>
+            <button class="tab-button" data-tab="avanzado">Visualización Avanzada</button>
+        </div>
+        
+        <!-- Tab: Análisis Básico -->
+        <div id="tab-basico" class="tab-content active">
+            <div class="results-grid">
+                <div class="result-card imagen-card">
+                    <h3>Imagen Analizada</h3>
+                    <img id="imagenCargada" src="" alt="Imagen cargada">
+                </div>
+                
+                <div class="result-card">
+                    <h3>Resultados de Clasificación</h3>
+                    
+                    <div id="resultadoPrincipal" class="resultado-principal">
+                        <!-- Se llenará con JavaScript -->
+                    </div>
+                    
+                    <div id="metricasOOD" class="metricas-ood">
+                        <!-- Se llenará con JavaScript -->
+                    </div>
+                    
+                    <div class="barras-confianza">
+                        <h4>Distribución de Confianza</h4>
+                        <div id="barrasPredicciones">
+                            <!-- Se llenará con JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab: Análisis Detallado -->
+        <div id="tab-detallado" class="tab-content">
+            <div class="graficos-grid">
+                <div class="grafico-card">
+                    <h3>Histograma RGB</h3>
+                    <img id="graficoHistogramaRGB" src="" alt="Histograma RGB">
+                </div>
+                
+                <div class="grafico-card">
+                    <h3>Distribución de Predicciones</h3>
+                    <img id="graficoPredicciones" src="" alt="Distribución">
+                </div>
+            </div>
+            
+            <div class="metricas-detalladas">
+                <h3>Métricas Detalladas</h3>
+                <pre id="textoMetricas"></pre>
+            </div>
+        </div>
+        
+        <!-- Tab: Visualización Avanzada -->
+        <div id="tab-avanzado" class="tab-content">
+            <div class="grafico-card-full">
+                <h3>Análisis de Canales HSV</h3>
+                <img id="graficoHSV" src="" alt="Análisis HSV">
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Analizando imagen...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const tipoPlanta = "{{ tipo_planta }}";
+    const nombresClases = {{ nombres_clases | tojson }};
+    const coloresClases = {{ colores_clases | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/analisis.js') }}"></script>
+{% endblock %}

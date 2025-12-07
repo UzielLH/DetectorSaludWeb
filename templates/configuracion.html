@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración - Analizador de Plantas{% endblock %}
+
+{% block content %}
+<div class="container config-container">
+    <div class="config-header">
+        <h1>Configuración del Analizador</h1>
+        <p>Carga tu modelo entrenado y el archivo de configuración</p>
+    </div>
+    
+    {% if error %}
+    <div class="alert alert-error">
+        <span class="alert-icon">⚠️</span>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+    
+    <div class="config-card">
+        <form id="formConfiguracion" enctype="multipart/form-data">
+            <div class="form-section">
+                <h2>Modelo de Clasificación</h2>
+                <p class="form-description">Selecciona tu modelo entrenado en formato .h5 o .keras</p>
+                
+                <div class="file-upload-wrapper">
+                    <input type="file" id="inputModelo" name="modelo" accept=".h5,.keras" required>
+                    <label for="inputModelo" class="file-upload-label">
+                        <span class="file-icon">📁</span>
+                        <span class="file-text">Seleccionar Modelo</span>
+                    </label>
+                    <span id="nombreArchivo" class="file-name"></span>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Archivo de Mapeo de Clases</h2>
+                <p class="form-description">Selecciona el archivo JSON con la configuración de clases (mapeo_clases_*.json)</p>
+                
+                <div class="file-upload-wrapper">
+                    <input type="file" id="inputMapeo" name="mapeo" accept=".json" required>
+                    <label for="inputMapeo" class="file-upload-label">
+                        <span class="file-icon">📋</span>
+                        <span class="file-text">Seleccionar JSON de Mapeo</span>
+                    </label>
+                    <span id="nombreArchivoMapeo" class="file-name"></span>
+                </div>
+                
+                <div class="info-box" style="margin-top: 1rem; padding: 1rem; background: #E3F2FD; border-radius: 8px; border-left: 4px solid #2196F3;">
+                    <strong>ℹ️ Información:</strong> El archivo JSON debe contener:
+                    <ul style="margin: 0.5rem 0 0 1.5rem;">
+                        <li><code>mapeo_generador_a_original</code>: Mapeo de índices del generador</li>
+                        <li><code>mapeo_clases</code>: Mapeo de índices a nombres de clases</li>
+                        <li><code>nombres_display</code>: Nombres para mostrar en la interfaz</li>
+                        <li><code>tipo_planta</code>: Tipo de planta (ej: "petunia")</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Tipo de Planta (opcional)</h2>
+                <p class="form-description">Puedes sobrescribir el tipo de planta del JSON aquí</p>
+                
+                <input type="text" 
+                       id="inputTipoPlanta" 
+                       name="tipo_planta" 
+                       class="form-input"
+                       placeholder="Se usará el tipo del JSON si se deja vacío">
+            </div>
+            
+            <div class="form-section">
+                <h2>Clases del Modelo</h2>
+                <p class="form-description">Las clases se cargarán automáticamente desde el archivo JSON</p>
+                
+                <div class="clases-info">
+                    <div class="clase-badge" style="background-color: #E8F5E9; color: #4CAF50;">
+                        <span class="clase-icon">✓</span> Ejemplo: Saludable
+                    </div>
+                    <div class="clase-badge" style="background-color: #FFF3E0; color: #FF9800;">
+                        <span class="clase-icon">⚠</span> Ejemplo: Enferma
+                    </div>
+                    <div class="clase-badge" style="background-color: #FFEBEE; color: #F44336;">
+                        <span class="clase-icon">✗</span> Ejemplo: Muerta
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <span>✓</span> Guardar Configuración
+                </button>
+            </div>
+        </form>
+        
+        <div id="resultadoConfig" class="alert" style="display: none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/configuracion.js') }}"></script>
+{% endblock %}
