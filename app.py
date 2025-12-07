@@ -122,7 +122,7 @@ def cargar_modelo():
         print(f"Modelo guardado. Tamaño: {os.path.getsize(ruta_temporal)} bytes")
         
         print("Cargando modelo en TensorFlow...")
-        modelo = tf.keras.models.load_model(ruta_temporal)
+        modelo = tf.keras.models.load_model(ruta_temporal, compile=False)
         print("Modelo cargado exitosamente")
         
         # Guardar en sesión
