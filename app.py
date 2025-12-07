@@ -16,6 +16,14 @@ import json
 import requests
 from dotenv import load_dotenv
 
+# Configurar TensorFlow para usar menos memoria
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Reducir logs
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
+# Configurar TensorFlow para CPU con menor uso de memoria
+tf.config.threading.set_inter_op_parallelism_threads(1)
+tf.config.threading.set_intra_op_parallelism_threads(1)
+
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max (para modelos grandes)
@@ -254,6 +262,11 @@ def cargar_modelo():
         modelo = tf.keras.models.load_model(ruta_temporal, compile=False)
         print("Modelo cargado exitosamente")
         
+        # Compilar con optimización de memoria
+        modelo.compile(optimizer='adam', loss='categorical_crossentropy')
+
+        # Limpiar caché de Keras
+        tf.keras.backend.clear_session()
         # Guardar en sesión
         session['modelo_cargado'] = True
         session['tipo_planta'] = tipo_planta
