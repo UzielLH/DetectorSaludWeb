@@ -1,5 +1,20 @@
 from flask import Flask, render_template, request, jsonify, session
+import os
+import gc
+
+# Configurar TensorFlow ANTES de importarlo para reducir memoria
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+
 import tensorflow as tf
+
+# Configurar threading para reducir overhead de memoria
+tf.config.threading.set_inter_op_parallelism_threads(1)
+tf.config.threading.set_intra_op_parallelism_threads(1)
+
 import numpy as np
 import cv2
 import base64
@@ -8,7 +23,6 @@ from PIL import Image
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import os
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 import secrets
@@ -16,17 +30,9 @@ import json
 import requests
 from dotenv import load_dotenv
 
-# Configurar TensorFlow para usar menos memoria
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Reducir logs
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
-
-# Configurar TensorFlow para CPU con menor uso de memoria
-tf.config.threading.set_inter_op_parallelism_threads(1)
-tf.config.threading.set_intra_op_parallelism_threads(1)
-
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max (para modelos grandes)
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # Reducir a 50MB
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 # Cargar variables de entorno
@@ -259,7 +265,13 @@ def cargar_modelo():
         print(f"Modelo guardado. Tamaño: {os.path.getsize(ruta_temporal)} bytes")
         
         print("Cargando modelo en TensorFlow...")
+        # Cargar modelo
         modelo = tf.keras.models.load_model(ruta_temporal, compile=False)
+
+        # Limpiar memoria inmediatamente
+        gc.collect()
+        tf.keras.backend.clear_session()
+
         print("Modelo cargado exitosamente")
         
         # Compilar con optimización de memoria
